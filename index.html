@@ -127,7 +127,37 @@ const info={
 
 /* ===== مورس ===== */
 const morse_en={"a":".-","b":"-...","c":"-.-.","d":"-..","e":".","f":"..-.","g":"--.","h":"....","i":"..","j":".---","k":"-.-","l":".-..","m":"--","n":"-.","o":"---","p":".--.","q":"--.-","r":".-.","s":"...","t":"-","u":"..-","v":"...-","w":".--","x":"-..-","y":"-.--","z":"--.."};
-const morse_ar={"ا":".-","ب":"-...","ت":"-","ث":"-.-.","ج":".---","ح":"....","خ":"--.-","د":"-..","ذ":"-..-","ر":".-.","ز":"--..","س":"...","ش":"----"};
+const morse_ar = {
+  "ا": ".-",
+  "ب": "-...",
+  "ت": "-",
+  "ث": "-.-.",
+  "ج": ".---",
+  "ح": "....",
+  "خ": "---.",
+  "د": "-..",
+  "ذ": "--..",
+  "ر": ".-.",
+  "ز": "---.",
+  "س": "...",
+  "ش": "----",
+  "ص": "-..-",
+  "ض": "...-",
+  "ط": "..-",
+  "ظ": ".--",
+  "ع": ".-.-",
+  "غ": "--.-",
+  "ف": "..-.",
+  "ق": "--.-",
+  "ك": "-.-",
+  "ل": ".-..",
+  "م": "--",
+  "ن": "-.",
+  "ه": "..-..",
+  "و": ".--",
+  "ي": ".."
+};
+
 
 /* ===== البيجر ===== */
 const pager_ar_letters=["ا","ب","ت","ث","ج","ح","خ","د","ذ","ر","ز","س","ش","ص","ض","ط","ظ","ع","غ","ف","ق","ك","ل","م","ن","ه","و","ي"];
@@ -156,21 +186,60 @@ function convert(type){
   let txt = type==="encode"?textInput.value.trim():codeOutput.value.trim();
   let out="";
 
-  if(mode==="morse"){
-    let m=lang==="ar"?morse_ar:morse_en;
-    let r=Object.fromEntries(Object.entries(m).map(([k,v])=>[v,k]));
-    if(type==="encode"){
-      for(let c of txt.toLowerCase()) out+=c===" "?" / ":m[c]?m[c]+" ":"";
-    }else out=txt.split(/\s+|\//).map(c=>r[c]||"").join("");
-  }
+if(mode==="morse"){
+  let m = lang==="ar" ? morse_ar : morse_en;
+  let r = Object.fromEntries(Object.entries(m).map(([k,v])=>[v,k]));
 
-  if(mode==="pager"){
-    let m=lang==="ar"?pager_ar:pager_en;
-    let r=reverseMap(m);
-    if(type==="encode"){
-      for(let c of txt.toUpperCase()) out+=r[c]?r[c].k+" ":"";
-    }else out=txt.split(/\s+/).map(n=>m[n]||"").join("");
+  if(type==="encode"){
+    for(let c of txt.toLowerCase()){
+      if(c===" ") out += " / ";
+      else if(m[c]) out += m[c] + " ";
+    }
+  }else{
+    out = "";
+    let parts = txt.split("/");   // المسافات بين الكلمات
+
+    for(let p of parts){
+      let letters = p.trim().split(/\s+/); // نفس ترتيبك
+      for(let l of letters){
+        if(r[l]) out += r[l];
+      }
+      out += " ";
+    }
   }
+}
+
+
+if(mode==="pager"){
+  let m = lang==="ar" ? pager_ar : pager_en;
+  let r = reverseMap(m);
+
+  if(type==="encode"){
+    out = "";
+    let words = txt.toUpperCase().split(" ");
+
+    for(let w of words){
+      let letters = [];
+      for(let c of w){
+        if(r[c]) letters.push(r[c].k);
+      }
+      out += letters.join("-") + " ";
+    }
+
+  }else{
+    out = "";
+    let words = txt.split(" "); // المسافة = كلمة
+
+    for(let w of words){
+      let nums = w.split("-"); // - = حرف
+      for(let n of nums){
+        if(m[n]) out += m[n];
+      }
+      out += " ";
+    }
+  }
+}
+
 
   if(mode==="nokia"){
     let m=lang==="ar"?nokia_ar:nokia_en;
