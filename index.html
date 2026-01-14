@@ -22,14 +22,18 @@ body::before{
   background:rgba(0,0,0,.65);
   z-index:-1;
 }
+
 .container{width:90%;max-width:900px;margin:auto;}
+
 .box{
   background:rgba(255,255,255,.08);
   backdrop-filter:blur(10px);
   padding:20px;
   border-radius:16px;
   margin-top:20px;
+  transition:.4s;
 }
+
 textarea{
   width:100%;
   height:120px;
@@ -40,6 +44,7 @@ textarea{
   border-radius:10px;
   font-size:16px;
 }
+
 .tab{
   display:inline-block;
   padding:8px 16px;
@@ -50,9 +55,25 @@ textarea{
   border:2px solid white;
 }
 .active{background:white;color:black;}
+
 .label{opacity:.9;margin-left:8px;}
 .footer{margin:25px 0;opacity:.9;}
 small{opacity:.85}
+
+/* ===== التأثيرات ===== */
+.fade-out{
+  opacity:0;
+  transform:translateY(20px);
+}
+
+.slide-up{
+  animation:slideUp .5s ease;
+}
+
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(40px)}
+  to{opacity:1;transform:translateY(0)}
+}
 </style>
 </head>
 
@@ -75,7 +96,7 @@ small{opacity:.85}
   </div>
 </div>
 
-<div class="container box">
+<div class="container box slide-up" id="workBox">
   <h3>النص</h3>
   <textarea id="textInput" placeholder="اكتب النص هنا"></textarea>
 
@@ -97,82 +118,98 @@ small{opacity:.85}
 let mode="morse";
 let lang="ar";
 
-/* ===== البيانات ===== */
+/* ===== الشرح ===== */
 const info={
   morse:{t:"تحويل الحروف إلى نقاط وشرطات.",e:"SOS → ... --- ..."},
-  pager:{t:"كل حرف يقابله رقم.",e:"SOS → 19 15 19"},
-  nokia:{t:"=ضغطات أزرار الجوالات القديمة",e:"hello → 44/33/555/555/666/"}
+  pager:{t:"كل حرف يقابله رقم ثابت.",e:"HELLO → 8 5 12 12 15"},
+  nokia:{t:"ضغطات أزرار الجوالات القديمة",e:"hello → 44/33/555/555/666/"}
 };
 
+/* ===== مورس ===== */
 const morse_en={"a":".-","b":"-...","c":"-.-.","d":"-..","e":".","f":"..-.","g":"--.","h":"....","i":"..","j":".---","k":"-.-","l":".-..","m":"--","n":"-.","o":"---","p":".--.","q":"--.-","r":".-.","s":"...","t":"-","u":"..-","v":"...-","w":".--","x":"-..-","y":"-.--","z":"--.."};
 const morse_ar={"ا":".-","ب":"-...","ت":"-","ث":"-.-.","ج":".---","ح":"....","خ":"--.-","د":"-..","ذ":"-..-","ر":".-.","ز":"--..","س":"...","ش":"----"};
 
-const pager_ar={1:"ا",2:"ب",3:"ت",4:"ث",5:"ج",6:"ح",7:"خ",8:"د",9:"ذ",10:"ر",11:"ز",12:"س",13:"ش"};
-const pager_en={1:"A",2:"B",3:"C",4:"D",5:"E",6:"F",7:"G",8:"H",9:"I"};
+/* ===== البيجر ===== */
+const pager_ar_letters=["ا","ب","ت","ث","ج","ح","خ","د","ذ","ر","ز","س","ش","ص","ض","ط","ظ","ع","غ","ف","ق","ك","ل","م","ن","ه","و","ي"];
+const pager_en_letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
+const pager_ar=Object.fromEntries(pager_ar_letters.map((c,i)=>[i+1,c]));
+const pager_en=Object.fromEntries(pager_en_letters.map((c,i)=>[i+1,c]));
+
+/* ===== نوكيا ===== */
 const nokia_ar={"2":"بتةث","3":"اء","4":"سشصض","5":"دذرز","6":"جحخ","7":"نهوي","8":"فقكلم","9":"طظعغ"};
 const nokia_en={"2":"abc","3":"def","4":"ghi","5":"jkl","6":"mno","7":"pqrs","8":"tuv","9":"wxyz"};
 
 function reverseMap(map){
   let r={};
   for(let k in map){
-    for(let i=0;i<map[k].length;i++) r[map[k][i]]={k,i};
+    let v=map[k];
+    if(typeof v==="string"){
+      for(let i=0;i<v.length;i++) r[v[i]]={k,i};
+    }
   }
   return r;
 }
 
 /* ===== التحويل ===== */
 function convert(type){
-  let txt = type==="encode" ? textInput.value.trim() : codeOutput.value.trim();
+  let txt = type==="encode"?textInput.value.trim():codeOutput.value.trim();
   let out="";
 
   if(mode==="morse"){
     let m=lang==="ar"?morse_ar:morse_en;
     let r=Object.fromEntries(Object.entries(m).map(([k,v])=>[v,k]));
     if(type==="encode"){
-      for(let c of txt) out+=c===" "?" / ":m[c]?m[c]+" ":"";
-    }else{
-      out=txt.split(/\s+|\//).map(c=>r[c]||"").join("");
-    }
+      for(let c of txt.toLowerCase()) out+=c===" "?" / ":m[c]?m[c]+" ":"";
+    }else out=txt.split(/\s+|\//).map(c=>r[c]||"").join("");
   }
 
   if(mode==="pager"){
     let m=lang==="ar"?pager_ar:pager_en;
     let r=reverseMap(m);
     if(type==="encode"){
-      for(let c of txt) out+=r[c]?r[c].k+" ":"";
-    }else{
-      out=txt.split(/\s+/).map(n=>m[n]||"").join("");
-    }
+      for(let c of txt.toUpperCase()) out+=r[c]?r[c].k+" ":"";
+    }else out=txt.split(/\s+/).map(n=>m[n]||"").join("");
   }
 
   if(mode==="nokia"){
     let m=lang==="ar"?nokia_ar:nokia_en;
     let r=reverseMap(m);
     if(type==="encode"){
-      for(let c of txt) out+=r[c]?r[c].k.repeat(r[c].i+1)+"/":"";
-    }else{
-      out=txt.split("/").map(s=>m[s[0]]?m[s[0]][s.length-1]||"":"").join("");
-    }
+      for(let c of txt.toLowerCase()) out+=r[c]?r[c].k.repeat(r[c].i+1)+"/":"";
+    }else out=txt.split("/").map(s=>m[s[0]]?m[s[0]][s.length-1]||"":"").join("");
   }
 
   if(type==="encode") codeOutput.value=out.trim();
   else textInput.value=out.trim();
 }
 
-/* ===== التحكم ===== */
+/* ===== التحكم + التأثير ===== */
 function setMode(m,el){
-  mode=m;
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  el.classList.add("active");
-  infoText.innerText=info[m].t;
-  exampleText.innerText=info[m].e;
+  const box=document.getElementById("workBox");
+  box.classList.add("fade-out");
+
+  setTimeout(()=>{
+    mode=m;
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    el.classList.add("active");
+
+    infoText.innerText=info[m].t;
+    exampleText.innerText=info[m].e;
+
+    box.classList.remove("fade-out");
+    box.classList.add("slide-up");
+    convert("encode");
+
+    setTimeout(()=>box.classList.remove("slide-up"),500);
+  },300);
 }
 
 function setLang(l,el){
   lang=l;
   el.parentNode.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
+  convert("encode");
 }
 
 textInput.addEventListener("input",()=>convert("encode"));
