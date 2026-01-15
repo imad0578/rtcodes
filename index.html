@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;600;800&display=swap" rel="stylesheet">
 
 <style>
+/* ===== الأساس ===== */
 body{
   margin:0;
   min-height:100vh;
@@ -19,46 +20,91 @@ body::before{
   content:"";
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.55); /* أخف */
   z-index:-1;
 }
 
 .container{width:90%;max-width:900px;margin:auto;}
 
+/* ===== الصناديق ===== */
 .box{
-  background:rgba(255,255,255,.08);
-  backdrop-filter:blur(10px);
-  padding:20px;
-  border-radius:16px;
-  margin-top:20px;
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,.14),
+    rgba(255,255,255,.05)
+  );
+  backdrop-filter:blur(12px);
+  padding:22px;
+  border-radius:18px;
+  margin-top:22px;
   transition:.4s;
+  box-shadow:0 20px 40px rgba(0,0,0,.45);
 }
 
+/* ===== العناوين ===== */
+h1{
+  letter-spacing:1.5px;
+  margin-top:25px;
+}
+h3{
+  letter-spacing:1px;
+}
+
+/* ===== مربعات النص ===== */
 textarea{
   width:100%;
   height:120px;
   background:rgba(0,0,0,.45);
   color:white;
   border:none;
-  padding:12px;
-  border-radius:10px;
+  padding:14px;
+  border-radius:12px;
   font-size:16px;
+  line-height:1.7;
+  transition:.3s;
+}
+textarea:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(255,255,255,.35);
 }
 
+/* ===== الأزرار ===== */
 .tab{
   display:inline-block;
-  padding:8px 16px;
-  border-radius:12px;
-  margin:4px;
+  padding:9px 18px;
+  border-radius:14px;
+  margin:5px;
   cursor:pointer;
   font-weight:700;
   border:2px solid white;
+  transition:.3s;
 }
-.active{background:white;color:black;}
+.tab:hover{
+  transform:translateY(-3px) scale(1.05);
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+.active{
+  background:white;
+  color:black;
+}
 
+/* ===== نصوص مساعدة ===== */
 .label{opacity:.9;margin-left:8px;}
-.footer{margin:25px 0;opacity:.9;}
 small{opacity:.85}
+
+/* ===== الحالة ===== */
+.status{
+  margin-top:10px;
+  opacity:.85;
+  font-size:14px;
+}
+
+/* ===== الفوتر ===== */
+.footer{
+  margin:30px 0;
+  opacity:.9;
+  font-size:14px;
+}
 
 /* ===== التأثيرات ===== */
 .fade-out{
@@ -94,6 +140,9 @@ small{opacity:.85}
     <span class="tab" onclick="setMode('pager',this)">📟 بيجر</span>
     <span class="tab" onclick="setMode('nokia',this)">📱 سياف</span>
   </div>
+
+  <div class="status" id="statusText">
+  </div>
 </div>
 
 <div class="container box slide-up" id="workBox">
@@ -111,7 +160,7 @@ small{opacity:.85}
 </div>
 
 <div class="footer">
-  لا تنسونا بالدعاء للوالد بالشفاء 🤍
+لا تنسونا بالدعاء للوالد بالشفاء 🤍
 </div>
 
 <script>
@@ -121,48 +170,17 @@ let lang="ar";
 /* ===== الشرح ===== */
 const info={
   morse:{t:"تحويل الحروف إلى نقاط وشرطات.",e:"SOS → ... --- ..."},
-  pager:{t:"كل حرف يقابله رقم ثابت.",e:"HELLO → 8 5 12 12 15"},
+  pager:{t:"كل حرف يقابله رقم ثابت.",e:"HELLO → 8-5-12-12-15"},
   nokia:{t:"ضغطات أزرار الجوالات القديمة",e:"hello → 44/33/555/555/666/"}
 };
 
 /* ===== مورس ===== */
 const morse_en={"a":".-","b":"-...","c":"-.-.","d":"-..","e":".","f":"..-.","g":"--.","h":"....","i":"..","j":".---","k":"-.-","l":".-..","m":"--","n":"-.","o":"---","p":".--.","q":"--.-","r":".-.","s":"...","t":"-","u":"..-","v":"...-","w":".--","x":"-..-","y":"-.--","z":"--.."};
-const morse_ar = {
-  "ا": ".-",
-  "ب": "-...",
-  "ت": "-",
-  "ث": "-.-.",
-  "ج": ".---",
-  "ح": "....",
-  "خ": "---.",
-  "د": "-..",
-  "ذ": "--..",
-  "ر": ".-.",
-  "ز": "---.",
-  "س": "...",
-  "ش": "----",
-  "ص": "-..-",
-  "ض": "...-",
-  "ط": "..-",
-  "ظ": ".--",
-  "ع": ".-.-",
-  "غ": "--.-",
-  "ف": "..-.",
-  "ق": "--.-",
-  "ك": "-.-",
-  "ل": ".-..",
-  "م": "--",
-  "ن": "-.",
-  "ه": "..-..",
-  "و": ".--",
-  "ي": ".."
-};
-
+const morse_ar={"ا":".-","ب":"-...","ت":"-","ث":"-.-.","ج":".---","ح":"....","خ":"---.","د":"-..","ذ":"--..","ر":".-.","ز":"---.","س":"...","ش":"----","ص":"-..-","ض":"...-","ط":"..-","ظ":".--","ع":".-.-","غ":"--.-","ف":"..-.","ق":"--.-","ك":"-.-","ل":".-..","م":"--","ن":"-.","ه":"..-..","و":".--","ي":".."};
 
 /* ===== البيجر ===== */
 const pager_ar_letters=["ا","ب","ت","ث","ج","ح","خ","د","ذ","ر","ز","س","ش","ص","ض","ط","ظ","ع","غ","ف","ق","ك","ل","م","ن","ه","و","ي"];
 const pager_en_letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
 const pager_ar=Object.fromEntries(pager_ar_letters.map((c,i)=>[i+1,c]));
 const pager_en=Object.fromEntries(pager_en_letters.map((c,i)=>[i+1,c]));
 
@@ -183,63 +201,41 @@ function reverseMap(map){
 
 /* ===== التحويل ===== */
 function convert(type){
-  let txt = type==="encode"?textInput.value.trim():codeOutput.value.trim();
+  let txt=type==="encode"?textInput.value.trim():codeOutput.value.trim();
   let out="";
 
-if(mode==="morse"){
-  let m = lang==="ar" ? morse_ar : morse_en;
-  let r = Object.fromEntries(Object.entries(m).map(([k,v])=>[v,k]));
-
-  if(type==="encode"){
-    for(let c of txt.toLowerCase()){
-      if(c===" ") out += " / ";
-      else if(m[c]) out += m[c] + " ";
-    }
-  }else{
-    out = "";
-    let parts = txt.split("/");   // المسافات بين الكلمات
-
-    for(let p of parts){
-      let letters = p.trim().split(/\s+/); // نفس ترتيبك
-      for(let l of letters){
-        if(r[l]) out += r[l];
+  if(mode==="morse"){
+    let m=lang==="ar"?morse_ar:morse_en;
+    let r=Object.fromEntries(Object.entries(m).map(([k,v])=>[v,k]));
+    if(type==="encode"){
+      for(let c of txt.toLowerCase()){
+        if(c===" ") out+=" / ";
+        else if(m[c]) out+=m[c]+" ";
       }
-      out += " ";
+    }else{
+      txt.split("/").forEach(p=>{
+        p.trim().split(/\s+/).forEach(l=>{ if(r[l]) out+=r[l]; });
+        out+=" ";
+      });
     }
   }
-}
 
-
-if(mode==="pager"){
-  let m = lang==="ar" ? pager_ar : pager_en;
-  let r = reverseMap(m);
-
-  if(type==="encode"){
-    out = "";
-    let words = txt.toUpperCase().split(" ");
-
-    for(let w of words){
-      let letters = [];
-      for(let c of w){
-        if(r[c]) letters.push(r[c].k);
-      }
-      out += letters.join("-") + " ";
-    }
-
-  }else{
-    out = "";
-    let words = txt.split(" "); // المسافة = كلمة
-
-    for(let w of words){
-      let nums = w.split("-"); // - = حرف
-      for(let n of nums){
-        if(m[n]) out += m[n];
-      }
-      out += " ";
+  if(mode==="pager"){
+    let m=lang==="ar"?pager_ar:pager_en;
+    let r=reverseMap(m);
+    if(type==="encode"){
+      txt.toUpperCase().split(" ").forEach(w=>{
+        let arr=[];
+        for(let c of w) if(r[c]) arr.push(r[c].k);
+        out+=arr.join("-")+" ";
+      });
+    }else{
+      txt.split(" ").forEach(w=>{
+        w.split("-").forEach(n=>{ if(m[n]) out+=m[n]; });
+        out+=" ";
+      });
     }
   }
-}
-
 
   if(mode==="nokia"){
     let m=lang==="ar"?nokia_ar:nokia_en;
@@ -253,23 +249,26 @@ if(mode==="pager"){
   else textInput.value=out.trim();
 }
 
-/* ===== التحكم + التأثير ===== */
+/* ===== التحكم ===== */
+function updateStatus(){
+  statusText.innerText=
+    (lang==="ar"?"":"")+"  "+
+    (mode==="morse"?"":mode==="pager"?"":" ")+"  ";
+}
+
 function setMode(m,el){
   const box=document.getElementById("workBox");
   box.classList.add("fade-out");
-
   setTimeout(()=>{
     mode=m;
     document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
     el.classList.add("active");
-
     infoText.innerText=info[m].t;
     exampleText.innerText=info[m].e;
-
+    updateStatus();
     box.classList.remove("fade-out");
     box.classList.add("slide-up");
     convert("encode");
-
     setTimeout(()=>box.classList.remove("slide-up"),500);
   },300);
 }
@@ -278,6 +277,7 @@ function setLang(l,el){
   lang=l;
   el.parentNode.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
   el.classList.add("active");
+  updateStatus();
   convert("encode");
 }
 
